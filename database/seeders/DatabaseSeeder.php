@@ -20,5 +20,6 @@ class DatabaseSeeder extends Seeder
             'email' => 'admin@test.com',
             'is_admin' => true,
         ]);
+        
     }
 }

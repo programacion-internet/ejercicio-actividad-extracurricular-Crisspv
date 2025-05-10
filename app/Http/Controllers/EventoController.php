@@ -13,7 +13,8 @@ class EventoController extends Controller
      */
     public function index()
     {
-        //
+        $eventos = Evento::whereDate('fecha', '>=', now())->orderBy('fecha')->get();
+        return view('eventos.index', compact('eventos'));
     }
 
     /**
