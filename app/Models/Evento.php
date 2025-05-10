@@ -7,20 +7,17 @@ use Illuminate\Database\Eloquent\Model;
 
 class Evento extends Model
 {
-    /** @use HasFactory<\Database\Factories\EventoFactory> */
     use HasFactory;
-    protected $fillable = [
-        'nombre',
-        'descripcion',
-        'fecha',
-    ];
 
-    protected $casts = [
-        'fecha' => 'date',
-    ];
+    protected $fillable = ['nombre', 'descripcion', 'fecha'];
 
-    public function users()
+    public function usuarios()
     {
-        return $this->belongsToMany(User::class, 'evento_user');
+        return $this->belongsToMany(User::class, 'evento_user')->withTimestamps();
+    }
+
+    public function evidencias()
+    {
+        return $this->hasMany(Evidencia::class);
     }
 }
