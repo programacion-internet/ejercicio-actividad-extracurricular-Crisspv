@@ -4,22 +4,21 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CreateEventoUserTable extends Migration
+class CreateEvidenciasTable extends Migration
 {
     public function up(): void
     {
-        Schema::create('evento_user', function (Blueprint $table) {
+        Schema::create('evidencias', function (Blueprint $table) {
             $table->id();
             $table->foreignId('evento_id')->constrained()->onDelete('cascade');
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
+            $table->string('archivo');
             $table->timestamps();
-
-            $table->unique(['evento_id', 'user_id']);
         });
     }
 
     public function down(): void
     {
-        Schema::dropIfExists('evento_user');
+        Schema::dropIfExists('evidencias');
     }
 }

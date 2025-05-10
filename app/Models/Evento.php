@@ -4,30 +4,20 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use app\Models\ArchivoEvento;
 
 class Evento extends Model
 {
     use HasFactory;
 
-    protected $fillable = [
-        'nombre',
-        'descripcion',
-        'fecha',
-    ];
+    protected $fillable = ['nombre', 'descripcion', 'fecha'];
 
-    protected $casts = [
-        'fecha' => 'date',
-    ];
-
-    public function users()
+    public function usuarios()
     {
-        return $this->belongsToMany(User::class, 'evento_user');
+        return $this->belongsToMany(User::class, 'evento_user')->withTimestamps();
     }
 
-    public function archivosEvento()
+    public function evidencias()
     {
-        return $this->hasMany(ArchivoEvento::class);
+        return $this->hasMany(Evidencia::class);
     }
-    
 }
