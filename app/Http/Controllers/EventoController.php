@@ -5,11 +5,21 @@ namespace App\Http\Controllers;
 use App\Models\Evento;
 use App\Http\Requests\StoreEventoRequest;
 use App\Http\Requests\UpdateEventoRequest;
+use App\Mail\InscripcionEvento;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Mail;
 
 class EventoController extends Controller
 {
+    public function __construct()
+    {
+        // Solo usuarios autenticados pueden acceder a estas acciones
+        $this->middleware('auth')->only(['show', 'inscribirse']);
+    }
+
     /**
-     * Display a listing of the resource.
+     * Muestra el listado de eventos futuros.
      */
     public function index()
     {
@@ -18,48 +28,67 @@ class EventoController extends Controller
     }
 
     /**
-     * Show the form for creating a new resource.
+     * Muestra el detalle de un evento.
      */
+    public function show(Evento $evento)
+    {
+        $usuario = Auth::user();
+        $inscrito = false;
+
+        if ($usuario && $usuario->role === 'alumno') {
+            $inscrito = $evento->alumnos()->where('user_id', $usuario->id)->exists();
+        }
+
+        return view('eventos.show', compact('evento', 'inscrito'));
+    }
+
+    /**
+     * Inscribe al alumno en un evento.
+     */
+    public function inscribirse(Request $request, Evento $evento)
+    {
+        $user = Auth::user();
+
+        if ($user->role !== 'alumno') {
+            abort(403, 'Solo los alumnos pueden inscribirse.');
+        }
+
+        // Verificar si ya está inscrito
+        if ($evento->alumnos()->where('user_id', $user->id)->exists()) {
+            return back()->with('error', 'Ya estás inscrito a este evento.');
+        }
+
+        // Relacionar en tabla pivote
+        $evento->alumnos()->attach($user->id);
+
+        // Enviar correo de confirmación
+        Mail::to($user)->send(new InscripcionEvento($evento));
+
+        return back()->with('success', 'Te has inscrito al evento y se ha enviado un correo de confirmación.');
+    }
+
+    // Métodos vacíos generados por el resource (puedes implementarlos más tarde)
+
     public function create()
     {
         //
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(StoreEventoRequest $request)
     {
         //
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(Evento $evento)
-    {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
     public function edit(Evento $evento)
     {
         //
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
     public function update(UpdateEventoRequest $request, Evento $evento)
     {
         //
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
     public function destroy(Evento $evento)
     {
         //

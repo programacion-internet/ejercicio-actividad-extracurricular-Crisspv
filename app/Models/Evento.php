@@ -4,11 +4,12 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use app\Models\ArchivoEvento;
 
 class Evento extends Model
 {
-    /** @use HasFactory<\Database\Factories\EventoFactory> */
     use HasFactory;
+
     protected $fillable = [
         'nombre',
         'descripcion',
@@ -23,4 +24,10 @@ class Evento extends Model
     {
         return $this->belongsToMany(User::class, 'evento_user');
     }
+
+    public function archivosEvento()
+    {
+        return $this->hasMany(ArchivoEvento::class);
+    }
+    
 }
