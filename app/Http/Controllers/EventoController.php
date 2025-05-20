@@ -3,64 +3,44 @@
 namespace App\Http\Controllers;
 
 use App\Models\Evento;
-use App\Http\Requests\StoreEventoRequest;
-use App\Http\Requests\UpdateEventoRequest;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Gate;
+use App\Models\User;
 
 class EventoController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
     public function index()
     {
-        //
+        $eventos = Evento::where('fecha', '>=', now())->get();
+        return view('eventos.index', compact('eventos'));
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(StoreEventoRequest $request)
-    {
-        //
-    }
-
-    /**
-     * Display the specified resource.
-     */
     public function show(Evento $evento)
     {
-        //
+        $inscrito = false;
+        if (Auth::check()) {
+            $inscrito = $evento->usuarios->contains(Auth::user());
+        }
+        return view('eventos.show', compact('evento', 'inscrito'));
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(Evento $evento)
+    public function inscribirse(Evento $evento)
     {
-        //
-    }
+        Gate::authorize('inscribirse-evento', $evento);
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(UpdateEventoRequest $request, Evento $evento)
-    {
-        //
-    }
+        $user = Auth::user();
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(Evento $evento)
-    {
-        //
+        if (Gate::denies('inscribirse-evento', $evento)) {
+            abort(403);
+        }
+
+        $evento->usuarios()->attach($user->id);
+
+        // Enviar correo de confirmación
+        Mail::to($user->email)->send(new \App\Mail\InscripcionEvento($evento));
+
+        return redirect()->route('eventos.show', $evento)->with('success', 'Te has inscrito al evento.');
     }
 }
